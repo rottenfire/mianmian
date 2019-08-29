@@ -1,6 +1,9 @@
 <template>
   <div class="dashboard-container">
-    <div class="app-container">基础题库管理</div>
+   <el-card>
+      <el-button type='primary'>新增试题</el-button>
+      <el-button type='primary'>批量导入</el-button>
+   </el-card>
   </div>
 </template>
 
