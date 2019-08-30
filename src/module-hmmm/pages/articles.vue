@@ -2,11 +2,11 @@
   <div class="dashboard-container">
     <div class="app-container">
       <el-row class="el_row">
-        <el-button type="info">新增面试技巧</el-button>
+        <el-button type="info" @click="toAdd">新增面试技巧</el-button>
       </el-row>
       <el-row type="flex" justify="space-between" class="el_row">
         <el-col :span="6">
-          <el-input v-model="page.keyword" placeholder="请输入题目编号/题干"></el-input>
+          <el-input v-model="page.keyword" @change="getArticleList" placeholder="请输入题目编号/题干"></el-input>
         </el-col>
         <el-col :span="4">
           <el-button size="small" @click="page.keyword=''">清除</el-button>
@@ -25,7 +25,7 @@
               <el-popover placement="right" width="500" trigger="click">
                 <p>{{ articleDetail.title }}</p>
                 <hr />
-                <p>{{ articleDetail.articleBody }}</p>
+                <p v-html="articleDetail.articleBody"></p>
                 <el-button
                   type="text"
                   size="small"
@@ -34,7 +34,7 @@
                 >预览</el-button>
               </el-popover>
               <el-button
-                @click.native.prevent="editRow(scope.$index, tableData)"
+                @click.native.prevent="editRow(scope.row)"
                 type="text"
                 size="small"
               >修改</el-button>
@@ -65,6 +65,7 @@
 
 <script>
 import { list, remove, detail, state } from '@/api/hmmm/articles'
+import eventBus from '@/utils/eventBus'
 export default {
   name: 'ArticlesList',
   data() {
@@ -85,8 +86,7 @@ export default {
   methods: {
     // 获取内容列表
     async getArticleList() {
-      let { page, pagesize, keyword } = this.page
-      let result = await list(page, pagesize, keyword)
+      let result = await list(this.page)
       this.articleList = result.data.items
       this.totalPage = result.data.counts
     },
@@ -115,6 +115,13 @@ export default {
     async changeState(row) {
       await state(row) // 后端未作相应处理，页面数据没有改变
       this.getArticleList()
+    },
+    toAdd() {
+      this.$router.push('/articles/add')
+    },
+    editRow(row) {
+      eventBus.$emit('editItem', row)
+      this.$router.push('/articles/add')
     }
   },
   created() {

@@ -11,8 +11,13 @@ import './icons' // icon
 import './errorLog' // error log
 import * as filters from './filters' // global filters
 import './mock' // simulation data
+import { quillEditor } from 'vue-quill-editor'
 // font-awesome
 import 'font-awesome/css/font-awesome.css'
+// quill
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 /*
  * 注册 - 业务模块
  */
@@ -23,6 +28,9 @@ import base from '@/module-manage/' // 用户管理
 // import details from '@/module-details/' // 表单页
 import hmmm from '@/module-hmmm/' // 黑马面面
 
+Vue.component('quill-editer', quillEditor)
+// 富文本quill
+Vue.use(quillEditor)
 Vue.use(dashboard, store)
 Vue.use(base, store)
 // Vue.use(list, store)
@@ -33,7 +41,6 @@ Vue.use(hmmm, store)
 /*
  * 注册 - 组件
  */
-
 // 饿了么
 Vue.use(Element, {
   size: 'medium', // set element-ui default size
