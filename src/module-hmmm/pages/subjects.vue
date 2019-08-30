@@ -18,16 +18,21 @@
           </el-form-item>
         </el-form>
         <!-- 内容显示区域 -->
-        <el-table :data="tableData">
+        <el-table :data="items" >
           <el-table-column prop="id" width="80" label="序号"></el-table-column>
-          <el-table-column prop width label="学科名称"></el-table-column>
-          <el-table-column prop width label="创建者"></el-table-column>
-          <el-table-column prop width label="创建日期"></el-table-column>
-          <el-table-column prop width label="前台是否显示"></el-table-column>
-          <el-table-column prop width label="二级目录"></el-table-column>
-          <el-table-column prop width label="标签"></el-table-column>
-          <el-table-column prop width label="题目数量"></el-table-column>
-          <el-table-column prop width="300" label="操作"></el-table-column>
+          <el-table-column prop="subjectName" width label="学科名称"></el-table-column>
+          <el-table-column prop="username" width label="创建者"></el-table-column>
+          <el-table-column prop="addDate" width label="创建日期"></el-table-column>
+          <el-table-column prop="isFrontDisplay" width="120" label="前台是否显示"></el-table-column>
+          <el-table-column prop="twoLevelDirectory" width="80" label="二级目录"></el-table-column>
+          <el-table-column prop="tags" width="80" label="标签"></el-table-column>
+          <el-table-column prop="totals" width="80" label="题目数量"></el-table-column>
+          <el-table-column  width="300" label="操作">
+            <el-link type="primary">学科分类</el-link>
+            <el-link type="primary">学科标签</el-link>
+            <el-link type="primary">修改</el-link>
+            <el-link type="primary">操作</el-link>
+          </el-table-column>
         </el-table>
         <!-- 分页 -->
         <el-row class="pagination" type="flex" justify="center">
@@ -38,7 +43,7 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page="page.currentPage"
-            :page-sizes="[100, 200, 300, 400]"
+            :page-sizes="[10, 20, 30, 40]"
             :page-size="page.pageSize"
           ></el-pagination>
         </el-row>
@@ -48,11 +53,15 @@
 </template>
 
 <script>
+// 引入学科列表
+import { list } from '@/api/hmmm/subjects'
 export default {
   name: 'SubjectsList',
   data() {
     return {
-      tableData: [{ id: '1' }],
+
+      items: [],
+
       // 分页数据
       page: {
         currentPage: 1,
@@ -64,12 +73,31 @@ export default {
   methods: {
     // 当前页改变
     handleCurrentChange(newPage) {
-
+      this.page.currentPage = newPage
+      this.getArticlesList()
     },
     // 每页显示的条数改变
-    handleSizeChange() {
-
+    handleSizeChange(newPageSize) {
+      this.page.pageSize = newPageSize
+      this.getArticlesList()
+    },
+    // 获取学科列表中的数据 
+    async getArticlesList() {
+      // 获取学科列表请求设置请求参数
+      let params = {page: this.page.currentPage, pagesize: this.page.pageSize}
+       
+       var articlesList = await list(params)
+      //  赋值给items
+       this.items = articlesList.data.items
+      //  总条数
+       this.page.total = articlesList.data.counts
+      //  console.log(articlesList)
+       
     }
+    
+  },
+  created() {
+    this.getArticlesList()
   }
 }
 </script>
