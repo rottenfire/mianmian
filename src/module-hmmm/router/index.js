@@ -82,15 +82,7 @@ export default [
         path: 'tags',
         component: _import('hmmm/pages/tags'),
         name: 'subjects-tags',
-        meta: { title: '标签', noCache: true },
-        children: [
-          {
-            path: 'tagsAdd',
-            component: _import('hmmm/components/tags-add'),
-            name: 'tags-add',
-            meta: { title: '标签添加', noCache: true }
-          }
-        ]
+        meta: { title: '标签', noCache: true }
       }
     ]
   },
