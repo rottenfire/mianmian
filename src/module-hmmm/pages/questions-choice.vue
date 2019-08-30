@@ -74,11 +74,13 @@
           <el-table-column width="100px" prop="chkUser" label="审核人"></el-table-column>
           <el-table-column prop="publishState" :formatter="formatterPublishState" label="发布状态"></el-table-column>
           <el-table-column width="230px" label="操作">
-            <el-button type="text">审核</el-button>
-            <el-button type="text">预览</el-button>
-            <el-button type="text">下架</el-button>
-            <el-link href="">修改</el-link>
-            <el-button type="text">删除</el-button>
+            <template slot-scope="stData">
+              <el-button type="text">审核</el-button>
+              <el-button type="text">预览</el-button>
+              <el-button type="text">下架</el-button>
+              <el-link href="">修改</el-link>
+              <el-button type="text" @click="del(stData.row)">删除</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
@@ -95,7 +97,7 @@
 import {simple} from '@/api/hmmm/subjects'
 import {provinces, citys} from '@/api/hmmm/citys'
 import {difficulty, chkType, questionType} from '@/api/hmmm/constants'
-import {choice} from '@/api/hmmm/questions'
+import {choice, remove} from '@/api/hmmm/questions'
 export default {
   name: 'QuestionsChoice',
   data() {
@@ -130,14 +132,35 @@ export default {
     }
   },
   methods: {
+    // 删除指定题目
+    del(id) {
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+           remove(id)
+           this.getChoiceList()
+        })
+    },
     // 根据条件获取数据
     async getList() {
       let params = this.formData
-      this.choiceList = await choice({...params})
-      // console.log(this.choiceList)
-      this.choice = this.choiceList.data.items
-      console.log(this.choice)
-      
+      this.getChoiceList({...params}) 
+    },
+    // 加载表格数据
+    async getChoiceList(params) {
+      // 获取难度选项
+      this.difficultyList = difficulty
+      // 获取审核状态选项
+     this.chkTypeList = chkType
+     // 获取题目类型选项
+     this.questionTypeList = questionType
+      this.choiceList = await choice(params)
+    //  console.log(this.choiceList)
+     this.choice = (this.choiceList.data.items)
+    //  console.log(this.choice)     
+    this.formData.total = this.choiceList.data.pages
     },
     // 清除选项
     clearFormData() {
@@ -226,21 +249,7 @@ export default {
      let subjects = await simple()
      this.subjectsList = subjects.data
      this.provincesList = await provinces()
-    //  console.log(this.provincesList)
-    //  console.log(this.formData.province)
-    //  console.log(this.citysList)
-    //  console.log(difficulty)
-     this.difficultyList = difficulty
-     this.chkTypeList = chkType
-    //  console.log(chkType)
-     this.questionTypeList = questionType
-    //  console.log(questionType)
-     this.choiceList = await choice()
-    //  console.log(this.choiceList)
-     this.choice = (this.choiceList.data.items)
-    //  console.log(this.choice)     
-    this.formData.total = this.choiceList.data.pages
-
+    this.getChoiceList()
   }
 }
 </script>
