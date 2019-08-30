@@ -3,7 +3,7 @@
     <div class="app-container">
       <el-card class="manage-content">
         <el-row class="add-btn" style="margin-bottom:30px;">
-          <el-button>新增学科</el-button>
+          <el-button @click="dialogTableVisible = true">新增学科</el-button>
         </el-row>
         <!-- 搜索按钮区域 -->
         <el-form label-width="80px" class="manage-search">
@@ -47,18 +47,25 @@
             :page-size="page.pageSize"
           ></el-pagination>
         </el-row>
+      <el-dialog title="新增学科" :visible.sync="dialogTableVisible">
+        <!-- 新增学科组件 -->
+        <subjects-add @closedialog="closeDialog"></subjects-add>
+      </el-dialog>
       </el-card>
     </div>
   </div>
 </template>
 
 <script>
+// 引入新增学科组件
+import subjectsAdd from '@/module-hmmm/components/subjects-add'
 // 引入学科列表
 import { list } from '@/api/hmmm/subjects'
 export default {
   name: 'SubjectsList',
   data() {
     return {
+      dialogTableVisible: false,
 
       items: [],
 
@@ -71,6 +78,11 @@ export default {
     }
   },
   methods: {
+    // 关闭弹出框
+    closeDialog(close) {
+      this.dialogTableVisible = close
+      this.getArticlesList()
+    },
     // 当前页改变
     handleCurrentChange(newPage) {
       this.page.currentPage = newPage
@@ -98,6 +110,10 @@ export default {
   },
   created() {
     this.getArticlesList()
+  },
+  components: {
+    // 注册新增学科组件
+    'subjects-add': subjectsAdd
   }
 }
 </script>
