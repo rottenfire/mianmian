@@ -18,7 +18,7 @@
           </el-form-item>
         </el-form>
         <!-- 内容显示区域 -->
-        <el-table :data="items" >
+        <el-table :data="items">
           <el-table-column prop="id" width="80" label="序号"></el-table-column>
           <el-table-column prop="subjectName" width label="学科名称"></el-table-column>
           <el-table-column prop="username" width label="创建者"></el-table-column>
@@ -27,11 +27,13 @@
           <el-table-column prop="twoLevelDirectory" width="80" label="二级目录"></el-table-column>
           <el-table-column prop="tags" width="80" label="标签"></el-table-column>
           <el-table-column prop="totals" width="80" label="题目数量"></el-table-column>
-          <el-table-column  width="300" label="操作">
-            <el-link type="primary">学科分类</el-link>
-            <el-link type="primary">学科标签</el-link>
-            <el-link type="primary">修改</el-link>
-            <el-link type="primary">操作</el-link>
+          <el-table-column width="300" label="操作">
+            <template slot-scope="scoped">
+              <el-link type="primary">学科分类</el-link>
+              <el-link type="primary">学科标签</el-link>
+              <el-link type="primary">修改</el-link>
+              <el-link @click="delItem(scoped.row)" type="primary">删除</el-link>
+            </template>
           </el-table-column>
         </el-table>
         <!-- 分页 -->
@@ -47,10 +49,10 @@
             :page-size="page.pageSize"
           ></el-pagination>
         </el-row>
-      <el-dialog title="新增学科" :visible.sync="dialogTableVisible">
-        <!-- 新增学科组件 -->
-        <subjects-add @closedialog="closeDialog"></subjects-add>
-      </el-dialog>
+        <el-dialog title="新增学科" :visible.sync="dialogTableVisible">
+          <!-- 新增学科组件 -->
+          <subjects-add @closedialog="closeDialog"></subjects-add>
+        </el-dialog>
       </el-card>
     </div>
   </div>
@@ -59,12 +61,13 @@
 <script>
 // 引入新增学科组件
 import subjectsAdd from '@/module-hmmm/components/subjects-add'
-// 引入学科列表
-import { list } from '@/api/hmmm/subjects'
+// 引入学科列表,学科删除
+import { list, remove } from '@/api/hmmm/subjects'
 export default {
   name: 'SubjectsList',
   data() {
     return {
+      // 新增学科弹出框标志点
       dialogTableVisible: false,
 
       items: [],
@@ -78,6 +81,14 @@ export default {
     }
   },
   methods: {
+    // 删除学科分类
+    delItem(row) {
+       this.$confirm('确认删除此条分类？', '提示').then(async() => {
+         await remove(row)
+        //  刷新列表
+        this.getArticlesList()
+       })
+    },
     // 关闭弹出框
     closeDialog(close) {
       this.dialogTableVisible = close
@@ -93,20 +104,18 @@ export default {
       this.page.pageSize = newPageSize
       this.getArticlesList()
     },
-    // 获取学科列表中的数据 
+    // 获取学科列表中的数据
     async getArticlesList() {
       // 获取学科列表请求设置请求参数
-      let params = {page: this.page.currentPage, pagesize: this.page.pageSize}
-       
-       var articlesList = await list(params)
+      let params = { page: this.page.currentPage, pagesize: this.page.pageSize }
+
+      var articlesList = await list(params)
       //  赋值给items
-       this.items = articlesList.data.items
+      this.items = articlesList.data.items
       //  总条数
-       this.page.total = articlesList.data.counts
-      //  console.log(articlesList)
-       
+      this.page.total = articlesList.data.counts
+      // console.log(this.items)
     }
-    
   },
   created() {
     this.getArticlesList()
