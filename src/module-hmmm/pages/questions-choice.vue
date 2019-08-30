@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-container">
     <div class="title">
-      <el-button type="primary">新增试题</el-button>
+      <el-button type="primary" @click="goNew">新增试题</el-button>
       <el-button type="primary">批量导入</el-button>
     </div>
     <el-form :inline="true">
@@ -65,7 +65,11 @@
           <el-table-column prop="subjectID" :formatter="subjectIDfun"  label="学科"></el-table-column>
           <el-table-column prop="questionType" :formatter='formatterType' label="题型"></el-table-column>
           <el-table-column width="150px" prop="question" label="题干"></el-table-column>
-          <el-table-column width="200px" prop="addDate" label="录入时间"></el-table-column>
+          <el-table-column width="200px" prop="addDate" label="录入时间">
+            <span slot-scope="stData">
+                {{stData.row.addDate | parseTimeByString('{y}-{m}-{d} {h}:{i}:{s}')}}
+            </span>
+          </el-table-column>
           <el-table-column width="150px" prop="creator" label="录入人"></el-table-column>
           <el-table-column prop="difficulty" :formatter='formatterDifficulty' label="难度"></el-table-column>
           <el-table-column prop label="使用次数"></el-table-column>
@@ -73,12 +77,12 @@
           <el-table-column width="150px" prop="chkRemarks" label="审核意见"></el-table-column>
           <el-table-column width="100px" prop="chkUser" label="审核人"></el-table-column>
           <el-table-column prop="publishState" :formatter="formatterPublishState" label="发布状态"></el-table-column>
-          <el-table-column width="230px" label="操作">
+          <el-table-column prop="id" width="230px" label="操作">
             <template slot-scope="stData">
               <el-button type="text">审核</el-button>
               <el-button type="text">预览</el-button>
               <el-button type="text">下架</el-button>
-              <el-link href="">修改</el-link>
+              <el-button type="text" @click="goNew(stData.row)">修改</el-button>
               <el-button type="text" @click="del(stData.row)">删除</el-button>
             </template>
           </el-table-column>
@@ -97,7 +101,7 @@
 import {simple} from '@/api/hmmm/subjects'
 import {provinces, citys} from '@/api/hmmm/citys'
 import {difficulty, chkType, questionType} from '@/api/hmmm/constants'
-import {choice, remove} from '@/api/hmmm/questions'
+import {choice, remove, update} from '@/api/hmmm/questions'
 export default {
   name: 'QuestionsChoice',
   data() {
@@ -147,6 +151,12 @@ export default {
     async getList() {
       let params = this.formData
       this.getChoiceList({...params}) 
+    },
+    // 跳转到录入页面
+    goNew(id) {
+      this.$router.push({path: 'new'})
+      console.log(id)
+      
     },
     // 加载表格数据
     async getChoiceList(params) {
