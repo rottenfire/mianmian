@@ -1,18 +1,374 @@
 <template>
   <div class="dashboard-container">
-    <div class="app-container">题库添加</div>
+    <el-card class="box-card">
+      <el-form ref="newQuestionsForm" :rules="formDataRules" :model="formData" label-width="80px">
+        <el-form-item label="学科" prop="subjectID">
+          <el-select v-model="formData.subjectID" placeholder="请选择">
+            <el-option
+              v-for="item in subjectList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="目录" prop="catalogID">
+          <el-select v-model="formData.catalogID" placeholder="请选择活动区域">
+            <el-option
+              v-for="item in directoryList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="企业" prop="enterpriseID">
+          <el-select v-model="formData.enterpriseID" filterable placeholder="请选择活动区域">
+            <el-option
+              v-for="item in companyList.items"
+              :key="item.id"
+              :label="item.company"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="城市" prop="city">
+          <el-select @change="changeCity" v-model="city" filterable placeholder="请选择">
+            <el-option v-for="item in citysList" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+          <el-select v-model="formData.city" placeholder="请选择">
+            <el-option v-for="item in areaList" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="方向" prop="direction">
+          <el-select v-model="formData.direction" placeholder="请选择">
+            <el-option v-for="item in directionList" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="题型" prop="questionType">
+          <el-radio-group v-model="formData.questionType" @change="changeType">
+            <el-radio
+              v-for="item in questionType"
+              :key="item.value"
+              :label="item.value"
+            >{{item.label}}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="难度" prop="difficulty">
+          <el-radio-group v-model="formData.difficulty">
+            <el-radio
+              v-for="item in difficulty"
+              :key="item.value"
+              :label="item.value"
+            >{{item.label}}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="题干" prop="question">
+          <quill-editor :options="editorOption" class="quill-editor" v-model="formData.question"></quill-editor>
+        </el-form-item>
+
+        <el-form-item v-if="formData.questionType !== 3" class="option" label="选项" prop="option">
+          <el-radio-group
+            v-model="optionRadio"
+            @change="changeOption"
+            v-if="formData.questionType === 1"
+          >
+            <el-radio
+              class="optionItem"
+              v-for="(item,index) in formData.option"
+              :key="index"
+              :label="item.code"
+            >
+              <el-row type="flex" justify="flex-start" align="middle">
+                <span class="optionCode">{{item.code}}</span>
+                <el-input class="optionTitle" v-model="item.title" placeholder="请输入内容"></el-input>
+                <div class="uploadBox">
+                  <i class="el-icon-plus"></i>
+                </div>
+                <i class="delIcon el-icon-error" @click="delItem(index)"></i>
+              </el-row>
+            </el-radio>
+          </el-radio-group>
+          <el-checkbox-group
+            v-model="optionList"
+            @change="changeOption"
+            v-if="formData.questionType === 2"
+          >
+            <el-checkbox
+              class="optionItem"
+              v-for="(item,index) in formData.option"
+              :key="index"
+              :label="item.code"
+            >
+              <el-row type="flex" justify="flex-start" align="middle">
+                <span class="optionCode">{{item.code}}</span>
+                <el-input class="optionTitle" v-model="item.title" placeholder="请输入内容"></el-input>
+                <div class="uploadBox">
+                  <i class="el-icon-plus"></i>
+                </div>
+                <i class="delIcon el-icon-error" @click="delItem(index)"></i>
+              </el-row>
+            </el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+        <el-button v-if="formData.questionType !== 3" class="addItemBtn" @click="addItem">+增加选项及答案</el-button>
+
+        <el-form-item label="解析视频">
+          <el-input v-model="formData.videoURL" placeholder="请输入视频地址，以http(s)://开头"></el-input>
+        </el-form-item>
+
+        <el-form-item label="答案解析" prop="answer">
+          <quill-editor :options="editorOption" class="quill-editor" v-model="formData.answer"></quill-editor>
+        </el-form-item>
+
+        <el-form-item label="题目备注">
+          <el-input type="textarea" :rows="3" v-model="formData.remarks" placeholder="请输入备注"></el-input>
+        </el-form-item>
+
+        <el-form-item label="试题标签" prop="tags">
+          <el-input v-model="formData.tags" placeholder="请输入标签"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitQuestion">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
 <script>
+import { simple as subjectsSimple } from '@/api/hmmm/subjects.js'
+import { simple as directorysSimple } from '@/api/hmmm/directorys.js'
+import { list as companysList } from '@/api/hmmm/companys.js'
+import { provinces, citys as cityArea } from '@/api/hmmm/citys.js'
+import { direction, questionType, difficulty } from '@/api/hmmm/constants.js'
+import { add } from '@/api/hmmm/questions.js'
 export default {
   name: 'QuestionsNew',
   data() {
-    return {}
+    const validateOptions = (rules, value, callback) => {
+        console.log(rules)
+        console.log(value)
+        console.log(callback)
+      }
+    return {
+      formData: {
+        subjectID: '',
+        catalogID: '',
+        enterpriseID: '',
+        city: '',
+        direction: '',
+        questionType: 1,
+        difficulty: '',
+        question: '',
+        option: [
+          { code: 'A', title: '', img: '', isRight: false },
+          { code: 'B', title: '', img: '', isRight: false },
+          { code: 'C', title: '', img: '', isRight: false },
+          { code: 'D', title: '', img: '', isRight: false }
+        ],
+        videoURL: '',
+        answer: '',
+        remarks: '',
+        tags: ''
+      },
+      formDataRules: {
+        subjectID: [
+          {required: true, message: '请选择学科', trigger: 'change'}
+        ],
+        catalogID: [
+          {required: true, message: '请选择目录', trigger: 'change'}
+        ],
+        enterpriseID: [
+          {required: true, message: '请选择企业', trigger: 'change'}
+        ],
+        city: [
+          {required: true, message: '请选择城市', trigger: 'change'}
+        ],
+        direction: [
+          {required: true, message: '请选择方向', trigger: 'change'}
+        ],
+        questionType: [
+          { required: true, message: '请选择题型', trigger: 'change' }
+        ],
+        difficulty: [
+          { required: true, message: '请选择难度', trigger: 'change' }
+        ],
+        question: [
+          { required: true, message: '请输入题干内容', trigger: 'blur' }
+        ],
+        option: [
+        ],
+        answer: [
+          { required: true, message: '请输入答案解析', trigger: 'blur' }
+        ],
+        tags: [
+          { required: true, message: '请输入试题标签', trigger: 'blur' }
+        ]
+      },
+      optionRadio: '',
+      optionList: [],
+      city: '',
+      citysList: provinces(),
+      areaList: [],
+      subjectList: [],
+      directoryList: [],
+      companyList: [],
+      directionList: direction,
+      questionType: questionType, // 单选1 多选2 简答3
+      difficulty: difficulty,
+      disabled: false,
+      editorOption: {
+        placeholder: '请在这里输入'
+      }
+    }
+  },
+  methods: {
+    async getSubjectsList() {
+      let result = await subjectsSimple()
+      this.subjectList = result.data
+    },
+    async getDirectorysList() {
+      let result = await directorysSimple()
+      this.directoryList = result.data
+    },
+    async getCompanysList() {
+      let result = await companysList()
+      this.companyList = result.data
+    },
+    changeCity(value) {
+      this.areaList = cityArea(value)
+    },
+    setImgURL(param) {
+      console.log(param)
+    },
+    itemPicRemove(file) {},
+    addItem() {
+      const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      let newCode = codeStr.charAt(this.formData.option.length)
+      this.formData.option.push({
+        code: newCode,
+        title: '',
+        img: '',
+        isRight: false
+      })
+      this.resetOption()
+    },
+    delItem(index) {
+      this.formData.option.splice(index, 1)
+      this.resetOption()
+      this.resetCode()
+    },
+    resetCode() {
+      const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      this.formData.option = this.formData.option.map((item, index) => {
+        item.code = codeStr.charAt(index)
+        return item
+      })
+    },
+    changeType(data) {
+      this.resetOption()
+    },
+    changeOption(data) {
+      this.formData.option = this.formData.option.map(item => {
+        item.isRight = false
+        return item
+      })
+      if (this.formData.questionType === 1) {
+        this.optionList = []
+        this.formData.option = this.formData.option.map(item => {
+          if (item.code === data) {
+            item.isRight = true
+          }
+          return item
+        })
+      } else {
+        this.optionRadio = ''
+        const obj = {}
+        data.map(item => {
+          obj[item] = true
+        })
+        this.formData.option = this.formData.option.map(item => {
+          if (obj[item.code]) {
+            item.isRight = true
+          }
+          return item
+        })
+      }
+    },
+    resetOption() {
+      this.optionList = []
+      this.optionRadio = ''
+      this.formData.option = this.formData.option.map(item => {
+        item.isRight = false
+        return item
+      })
+    },
+    async submitQuestion() {
+      for (let i = 0; i < this.formData.option.length; i++) {
+        console.log(
+          this.formData.option[i].code,
+          this.formData.option[i].isRight
+        )
+      }
+      console.log(this.formData)
+      let result = await add(this.formData)
+      console.log(result)
+    }
+  },
+  created() {
+    this.getSubjectsList()
+    this.getDirectorysList()
+    this.getCompanysList()
   }
 }
 </script>
 
 <style lang="less" scoped>
-
+.option {
+  .optionItem {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px 0;
+    .optionCode {
+      display: inline-block;
+      width: 30px;
+    }
+    .optionTitle {
+      margin-right: 20px;
+    }
+    .uploadBox {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px dashed #ccc;
+      border-radius: 5px;
+      margin-right: 20px;
+      .el-icon-plus {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #606266;
+      }
+    }
+    .delIcon {
+      color: red;
+    }
+  }
+}
+.addItemBtn {
+  margin: -10px 0 20px 80px;
+}
 </style>
