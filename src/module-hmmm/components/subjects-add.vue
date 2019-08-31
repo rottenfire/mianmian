@@ -33,7 +33,10 @@ export default {
       },
       // 校验规则
       rules: {
-        subjectName: [{ required: true, message: '学科名称不能为空' }]
+        subjectName: [
+          { required: true, message: '学科名称不能为空' },
+          {pattern: /^[C][0-9]{6}$/, message: '请书写C开头+6位数字'}
+          ]
       }
     }
   },
