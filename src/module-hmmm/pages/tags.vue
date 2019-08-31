@@ -1,35 +1,37 @@
 <template>
   <div class="dashboard-container">
     <div class="app-container">学科管理 > 标签管理</div>
-    <!-- f          ---------------------------------------------------------- -->
+    <!-- form表单组件 --------------------------------------------------------- -->
     <el-form :model="formData">
       <el-form-item style="margin-left:5px">
-        <el-button type="primary" @click="getTableDataAdd">新建学科</el-button>
+        <el-button type="primary" @click="addTable">新建标签</el-button>
         <el-button type="primary">返回学科</el-button>
       </el-form-item>
       <el-form-item v-model="formData.label" label="标签名称:" label-width="100px" style="width:300px">
         <el-input placeholder="请输入"></el-input>
       </el-form-item>
     </el-form>
-    <!-- table表格组件-------------------------------------------------------- -->
+    <!-- table表格组件 ------------------------------------------------------- -->
     <el-table :data="tableData" border style="width: 100%">
       <el-table-column prop="id" label="序号" width="60"></el-table-column>
       <el-table-column prop="tagName" label="标签名称" width="300"></el-table-column>
       <el-table-column prop="subjectName" label="创建者" width="100"></el-table-column>
       <el-table-column prop="addDate" label="日期" width="200">
-        <span slot-scope="stData">{{ stData.row.addDate | parseTimeByString('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
+        <span
+          slot-scope="stData"
+        >{{ stData.row.addDate | parseTimeByString('{y}-{m}-{d} {h}:{i}:{s}') }}</span>
       </el-table-column>
       <el-table-column prop="totals" label="面试题数量" width="100"></el-table-column>
       <el-table-column prop="state" label="状态" width="100" :formatter="formatter"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="stData">
-          <el-button type="text">修改</el-button>
-          <el-button type="text">禁用</el-button>
+          <el-button type="text" @click="editTable(stData.row)">修改</el-button>
+          <el-button type="text" @click="ProhibitTable(stData.row)">禁用</el-button>
           <el-button type="text" @click="deleteTable(stData.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <!-- 分页组件-------------------------------------------------------------- -->
+    <!-- 分页组件 ------------------------------------------------------------- -->
     <el-row type="flex" justify="center" style="margin:20px 0">
       <el-pagination
         :current-page="page.currentPage"
@@ -38,28 +40,43 @@
         background
         layout="prev, pager, next"
       ></el-pagination>
-    </el-row>    
+    </el-row>
+    <!-- 新增标签 -------------------------------------------------------------- -->
+    <template v-if="tagsAddTableVisible">
+      <el-dialog title="新增标签" :visible="tagsAddTableVisible">
+        <tags-add :addEdit="addEdit" @closedialog="closedialog"></tags-add>
+      </el-dialog>
+    </template>
   </div>
 </template>
 
 <script>
-import { list, add, remove } from '@/api/hmmm/tags'
+import { list, add, remove, update } from '@/api/hmmm/tags'
+import tagsAdd from '../components/tags-add'
 
 export default {
   name: 'TagsList',
   data() {
     return {
+      // 新增标签弹窗 默认不显示
+      tagsAddTableVisible: false,
+      // 表格列表
       tableData: [],
+      // 搜索输入定义formData
       formData: {
         label: ''
       },
+      // 分页
       page: {
         total: 5,
         pageSize: 1,
         currentPage: 1
-      }
+      },
+      // 新增/修改
+      addEdit: {}
     }
   },
+  // 方法
   methods: {
     // 获取列表信息 -----------------------------------
     async getTableData() {
@@ -68,10 +85,25 @@ export default {
       // console.log(getTableData.data.items)
       this.tableData = getTableData.data.items
     },
-    // 添加跳转 ----------------------------------------
-    getTableDataAdd() {
-      // 点击新建跳转添加页面
-      this.$router.push('/subjects/tags/tagsAdd')
+    // 添加标签 ----------------------------------------
+    addTable() {
+      // 点击添加 显示弹窗
+      this.tagsAddTableVisible = true
+      // 
+      this.addEdit = {} // 问题
+    },
+    // 修改 --------------------------------------------
+    editTable(row) {
+      // 点击添加 显示弹窗
+      this.tagsAddTableVisible = true
+      //
+      this.addEdit = row // 问题
+    },
+    // 关闭弹窗 ----------------------------------------
+    closedialog(close) {
+      this.tagsAddTableVisible = close
+      // 重新获取
+      this.getTableData()
     },
     // 删除 --------------------------------------------
     async deleteTable(id) {
@@ -89,13 +121,22 @@ export default {
     // cilumn 当前列的属性
     // cellValue 当前单元格的属性
     // index 索引
-    formatter (row, column, cellValue, index) {
+    formatter(row, column, cellValue, index) {
       return cellValue ? '启用' : '屏蔽'
-    }
-    // -----------------------------------------------
+    },
+    // 禁用 -------------------------------------------
+    ProhibitTable(row) {}
   },
+
+  // 渲染
   created() {
     this.getTableData()
+  },
+
+  // 局部组件  弹窗显示
+  components: {
+    // 注册标签添加组件
+    'tags-add': tagsAdd
   }
 }
 </script>
