@@ -55,7 +55,7 @@
             <el-radio
               v-for="item in questionType"
               :key="item.value"
-              :label="item.value"
+              :label="item.value.toString()"
             >{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -65,7 +65,7 @@
             <el-radio
               v-for="item in difficulty"
               :key="item.value"
-              :label="item.value"
+              :label="item.value.toString()"
             >{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -74,15 +74,15 @@
           <quill-editor :options="editorOption" class="quill-editor" v-model="formData.question"></quill-editor>
         </el-form-item>
 
-        <el-form-item v-if="formData.questionType !== 3" class="option" label="选项" prop="option">
+        <el-form-item v-if="formData.questionType !== '3'" class="option" label="选项" prop="options">
           <el-radio-group
             v-model="optionRadio"
             @change="changeOption"
-            v-if="formData.questionType === 1"
+            v-if="formData.questionType === '1'"
           >
             <el-radio
               class="optionItem"
-              v-for="(item,index) in formData.option"
+              v-for="(item,index) in formData.options"
               :key="index"
               :label="item.code"
             >
@@ -99,11 +99,11 @@
           <el-checkbox-group
             v-model="optionList"
             @change="changeOption"
-            v-if="formData.questionType === 2"
+            v-if="formData.questionType === '2'"
           >
             <el-checkbox
               class="optionItem"
-              v-for="(item,index) in formData.option"
+              v-for="(item,index) in formData.options"
               :key="index"
               :label="item.code"
             >
@@ -118,9 +118,9 @@
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-button v-if="formData.questionType !== 3" class="addItemBtn" @click="addItem">+增加选项及答案</el-button>
+        <el-button v-if="formData.questionType !== '3'" class="addItemBtn" @click="addItem">+增加选项及答案</el-button>
 
-        <el-form-item label="解析视频">
+        <el-form-item label="解析视频" prop="videoURL">
           <el-input v-model="formData.videoURL" placeholder="请输入视频地址，以http(s)://开头"></el-input>
         </el-form-item>
 
@@ -128,7 +128,7 @@
           <quill-editor :options="editorOption" class="quill-editor" v-model="formData.answer"></quill-editor>
         </el-form-item>
 
-        <el-form-item label="题目备注">
+        <el-form-item label="题目备注" prop="remarks">
           <el-input type="textarea" :rows="3" v-model="formData.remarks" placeholder="请输入备注"></el-input>
         </el-form-item>
 
@@ -178,10 +178,10 @@ export default {
         enterpriseID: '',
         city: '',
         direction: '',
-        questionType: 1,
+        questionType: '1',
         difficulty: '',
         question: '',
-        option: [
+        options: [
           { code: 'A', title: '', img: '', isRight: false },
           { code: 'B', title: '', img: '', isRight: false },
           { code: 'C', title: '', img: '', isRight: false },
@@ -215,14 +215,23 @@ export default {
         question: [
           { required: true, message: '请输入题干内容', trigger: 'blur' }
         ],
-        option: [
+        options: [
           {
             validator: validateOptions
+          }
+        ],
+        videoURL: [
+          { required: true, message: '请输入解析视频', trigger: 'blur' },
+          {
+            pattern: /^http[s]*/,
+            message: '请以http(s)://开头',
+            trigger: 'blur'
           }
         ],
         answer: [
           { required: true, message: '请输入答案解析', trigger: 'blur' }
         ],
+        remarks: [{ required: true, message: '请输入备注', trigger: 'blur' }],
         tags: [{ required: true, message: '请输入试题标签', trigger: 'blur' }]
       },
       optionRadio: '',
@@ -262,11 +271,10 @@ export default {
     setImgURL(param) {
       console.log(param)
     },
-    itemPicRemove(file) {},
     addItem() {
       const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      let newCode = codeStr.charAt(this.formData.option.length)
-      this.formData.option.push({
+      let newCode = codeStr.charAt(this.formData.options.length)
+      this.formData.options.push({
         code: newCode,
         title: '',
         img: '',
@@ -275,13 +283,13 @@ export default {
       this.resetOption()
     },
     delItem(index) {
-      this.formData.option.splice(index, 1)
+      this.formData.options.splice(index, 1)
       this.resetOption()
       this.resetCode()
     },
     resetCode() {
       const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      this.formData.option = this.formData.option.map((item, index) => {
+      this.formData.options = this.formData.options.map((item, index) => {
         item.code = codeStr.charAt(index)
         return item
       })
@@ -290,13 +298,13 @@ export default {
       this.resetOption()
     },
     changeOption(data) {
-      this.formData.option = this.formData.option.map(item => {
+      this.formData.options = this.formData.options.map(item => {
         item.isRight = false
         return item
       })
-      if (this.formData.questionType === 1) {
+      if (this.formData.questionType === '1') {
         this.optionList = []
-        this.formData.option = this.formData.option.map(item => {
+        this.formData.options = this.formData.options.map(item => {
           if (item.code === data) {
             item.isRight = true
           }
@@ -308,7 +316,7 @@ export default {
         data.map(item => {
           obj[item] = true
         })
-        this.formData.option = this.formData.option.map(item => {
+        this.formData.options = this.formData.options.map(item => {
           if (obj[item.code]) {
             item.isRight = true
           }
@@ -319,17 +327,26 @@ export default {
     resetOption() {
       this.optionList = []
       this.optionRadio = ''
-      this.formData.option = this.formData.option.map(item => {
+      this.formData.options = this.formData.options.map(item => {
         item.isRight = false
         return item
       })
     },
+    // 将number类型转换为string类型
+    formatNumberToString() {
+      for (let key in this.formData) {
+        if (typeof this.formData[key] === 'number') {
+          this.formData[key] = this.formData[key].toString()
+        }
+      }
+      console.log(this.formData)
+    },
     // 提交新增问题表单内容
     submitQuestion() {
-      for (let i = 0; i < this.formData.option.length; i++) {
+      for (let i = 0; i < this.formData.options.length; i++) {
         console.log(
-          this.formData.option[i].code,
-          this.formData.option[i].isRight
+          this.formData.options[i].code,
+          this.formData.options[i].isRight
         )
       }
       console.log(this.formData)
