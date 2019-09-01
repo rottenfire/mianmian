@@ -80,7 +80,7 @@
           <el-table-column prop="id" width="230px" label="操作">
             <template slot-scope="stData">
               <el-button type="text">审核</el-button>
-              <el-button type="text">预览</el-button>
+              <el-button type="text" @click="preview">预览</el-button>
               <el-button type="text">下架</el-button>
               <el-button type="text" @click="goNew(stData.row)">修改</el-button>
               <el-button type="text" @click="del(stData.row)">删除</el-button>
@@ -136,6 +136,10 @@ export default {
     }
   },
   methods: {
+    // 预览
+    preview() {
+
+    },
     // 删除指定题目
     del(id) {
       this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
@@ -187,6 +191,7 @@ export default {
       this.getChoiceList() 
     },
     getcity(pm) {
+      this.formData.city = ''
       this.citysList = citys(pm) 
       // 获取城市地区      
     },
