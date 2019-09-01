@@ -60,6 +60,10 @@ module.exports = {
         use: ['style-loader', 'css-loader', 'less-loader']
       },
       {
+        test: /\.less$/,// 正则表达式匹配所有的.less文件
+        use: ['style-loader', 'css-loader', 'less-loader']
+      },
+      {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
