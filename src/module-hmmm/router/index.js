@@ -73,13 +73,13 @@ export default [
         meta: { title: '学科', noCache: true }
       },
       {
-        path: 'directorys',
+        path: 'directorys/:id',
         component: _import('hmmm/pages/directorys'),
         name: 'subjects-directorys',
         meta: { title: '目录', noCache: true }
       },
       {
-        path: 'tags',
+        path: 'tags/:id',
         component: _import('hmmm/pages/tags'),
         name: 'subjects-tags',
         meta: { title: '标签', noCache: true }
