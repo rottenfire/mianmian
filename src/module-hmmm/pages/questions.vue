@@ -127,21 +127,26 @@
         </el-row>
       </el-form>
       <!-- 表格 -->
-      <el-table :data="list" border style="width: 100%">
+      <el-table :data=list border style="width: 100%">
         <el-table-column prop="id" label="序号" width="80"></el-table-column>
         <el-table-column prop="number" label="试题编号" width="100"></el-table-column>
-        <el-table-column prop="subjectID" label="学科" width="80"></el-table-column>
-        <el-table-column prop="questionType" label="题型" width="80"></el-table-column>
+        <el-table-column  prop="subjectID" label="学科" width="80"></el-table-column>
+        <el-table-column :formatter="fmQuestionType" prop="questionType" label="题型" width="80"></el-table-column>
         <el-table-column prop="question" label="题干" width="160"></el-table-column>
-        <el-table-column prop="addDate" label="录入时间" width="220"></el-table-column>
-        <el-table-column prop="difficulty" label="难度" width="80"></el-table-column>
+        <el-table-column  prop="addDate" label="录入时间" width="220">
+          <span slot-scope='stData'>{{stData.row.addDate | parseTimeByString('{y}-{m}-{d} {h}:{i}:{s}')}}</span>
+        </el-table-column>
+        <el-table-column :formatter="fmDifficulty" prop="difficulty" label="难度" width="80"></el-table-column>
         <el-table-column prop="address" label="使用次数" width="80"></el-table-column>
         <el-table-column prop="creator" label="录入人" width="120"></el-table-column>
         <el-table-column prop="address" label="操作">
-          <el-button type="primary">预览</el-button>
-          <el-button type="primary">修改</el-button>
-          <el-button type="primary">删除</el-button>
-          <el-button type="primary">加入精选</el-button>
+          <!-- 使用作用域插槽 -->
+          <template slot-scope='stData'>
+            <el-button type="primary">预览</el-button>
+            <el-button type="primary">修改</el-button>
+            <el-button type="primary" @click='delItem(stData.row)'>删除</el-button>
+            <el-button type="primary">加入精选</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <!-- 分页 -->
@@ -185,12 +190,12 @@
 
 <script>
 // 按需加载
-import { list as getTableList } from '@/api/hmmm/questions'
-import { simple } from '@/api/hmmm/subjects'
-import { difficulty, questionType, direction } from '@/api/hmmm/constants'
-import { provinces, citys } from '@/api/hmmm/citys'
-import { simple as tagsSimple } from '@/api/hmmm/tags'
-import { list as getusers } from '@/api/base/users'
+import { remove, list as getTableList } from '@/api/hmmm/questions' // 删除. 基础题库列表
+import { simple } from '@/api/hmmm/subjects' // 学科类型
+import { difficulty, questionType, direction } from '@/api/hmmm/constants' // 试题难度 类型 ,方向
+import { provinces, citys } from '@/api/hmmm/citys' // 城市
+import { simple as tagsSimple } from '@/api/hmmm/tags' // 标签简单列表
+import { list as getusers } from '@/api/base/users' // 录入人
 
 export default {
   name: 'QuestionsList',
@@ -270,7 +275,7 @@ export default {
       questionType: questionType,
 
       // 录入人
-      users: list
+      users: list // list 录入人导出
     }
 
     this.provinceList = provinces()
@@ -284,10 +289,51 @@ export default {
     this.formData.directionList = direction
 
     // 获取基础题库列表数据
-    let expList = await getTableList()
-    this.list = expList.data.items
+    this.getDataList()
+    
   },
   methods: {
+    async getDataList () {
+      let expList = await getTableList()
+      this.list = expList.data.items // 将后台数据data.items 赋值给list
+    },
+    // 删除列表项
+    async delItem(info) {
+      // 确认框
+     
+      let {data: {success}} = await remove(info)
+      // 更新数据
+      success && this.getDataList()
+    },
+    async getClearQuestion() {
+      let item = await list()
+      this.page.total = item.data.counts
+      this.quslist = item.data.items
+    },
+    // 时间格式化
+    parseTimeByString() {
+      
+    },
+    // 题型类型转换
+    fmQuestionType(row, column, newvalue, index) {
+          if (newvalue === '1') {
+            return '单选'
+          } else if (newvalue === '2') {
+            return '多选'
+          } else {
+            return '简答'
+          }
+    },
+    // 题型难度转换
+    fmDifficulty(row, column, newvalue, index) {
+      if (newvalue === '1') {
+        return '简单'
+      } else if (newvalue === '2') {
+        return '一般'
+      } else {
+        return '困难'
+      }
+    },
     // 清空搜索框功能
     getClear() {
       // this.$refs.form.resetFields()
