@@ -5,9 +5,9 @@
     <el-form :model="formData">
       <el-form-item style="margin-left:5px">
         <el-button type="primary" @click="addTable">新建标签</el-button>
-        <el-button type="primary">返回学科</el-button>
+        <el-button type="primary" @click="goSubject">返回学科</el-button>
       </el-form-item>
-      <el-form-item v-model="formData.label" label="标签名称:" label-width="100px" style="width:300px">
+      <el-form-item v-model="formData.labelName" label="标签名称:" label-width="100px" style="width:300px">
         <el-input placeholder="请输入"></el-input>
       </el-form-item>
     </el-form>
@@ -15,7 +15,7 @@
     <el-table :data="tableData" border style="width: 100%">
       <el-table-column prop="id" label="序号" width="60"></el-table-column>
       <el-table-column prop="tagName" label="标签名称" width="300"></el-table-column>
-      <el-table-column prop="subjectName" label="创建者" width="100"></el-table-column>
+      <el-table-column prop="creator" label="创建者" width="100"></el-table-column>
       <el-table-column prop="addDate" label="日期" width="200">
         <span
           slot-scope="stData"
@@ -34,16 +34,17 @@
     <!-- 分页组件 ------------------------------------------------------------- -->
     <el-row type="flex" justify="center" style="margin:20px 0">
       <el-pagination
-        :current-page="page.currentPage"
+        :current-page="page.page"
         :page-size="page.pageSize"
-        :total="page.total"
+        :total="page.pages"
+        @current-change="changePage"
         background
         layout="prev, pager, next"
       ></el-pagination>
     </el-row>
     <!-- 新增标签 -------------------------------------------------------------- -->
     <template v-if="tagsAddTableVisible">
-      <el-dialog title="新增标签" :visible="tagsAddTableVisible">
+      <el-dialog title="新增标签" :visible.sync="tagsAddTableVisible">
         <tags-add :addEdit="addEdit" @closedialog="closedialog"></tags-add>
       </el-dialog>
     </template>
@@ -64,13 +65,13 @@ export default {
       tableData: [],
       // 搜索输入定义formData
       formData: {
-        label: ''
+        labelName: ''
       },
       // 分页
       page: {
-        total: 5,
-        pageSize: 1,
-        currentPage: 1
+        page: 1, // 当前
+        pageSize: 10, // 每页多少条
+        pages: 0// 总条数
       },
       // 新增/修改
       addEdit: {}
@@ -80,10 +81,17 @@ export default {
   methods: {
     // 获取列表信息 -----------------------------------
     async getTableData() {
+      let params = {
+        page: this.page.page,
+        pageSize: this.page.pageSize
+      }
       // 获取列表
-      var getTableData = await list()
-      // console.log(getTableData.data.items)
+      var getTableData = await list(params)
+      // 获取列表信息赋值给data中 列表tableData
       this.tableData = getTableData.data.items
+      // 获取总页数赋值给page.pages
+      this.page.pages = getTableData.data.counts
+      console.log(getTableData.data.counts)
     },
     // 添加标签 ----------------------------------------
     addTable() {
@@ -98,6 +106,7 @@ export default {
       this.tagsAddTableVisible = true
       //
       this.addEdit = row // 问题
+      this.$emit('modifyTable', row)
     },
     // 关闭弹窗 ----------------------------------------
     closedialog(close) {
@@ -107,12 +116,21 @@ export default {
     },
     // 删除 --------------------------------------------
     async deleteTable(id) {
-      await this.$confirm('删除么？')
-      remove(id).then(() => {
+      await this.$confirm('删除么？', '提示')
+      await remove(id)
         // console.log(id)
         // 重新获取数据
-        this.getTableData()
-      })
+      this.getTableData()
+    },
+    // 点击跳转学科 ------------------------------------
+    goSubject() {
+      this.$router.push('list')
+    },
+    // 点击页码实现跳转当前点击页 -----------------------
+    changePage(newPage) {
+      this.page.page = newPage
+      // 重新获取
+      this.getTableData()
     },
     // 状态 -------------------------------------------
     // formatter 需要返回结果 需要根据当前值进行返回
