@@ -28,7 +28,7 @@
           <el-table-column align="center" prop="subjectName" width label="学科名称"></el-table-column>
           <el-table-column align="center" prop="username" width label="创建者"></el-table-column>
           <el-table-column align="center" width label="创建日期">
-            <template slot-scope="time">{{time.row.addDate | parseTimeByString(time.row.addDate)}}</template>
+            <template slot-scope="time">{{time.row.addDate | parseTimeByString()}}</template>
           </el-table-column>
           <el-table-column align="center" prop="isFrontDisplay" width="120" label="前台是否显示"></el-table-column>
           <el-table-column align="center" prop="twoLevelDirectory" width="80" label="二级目录"></el-table-column>
