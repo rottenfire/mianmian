@@ -3,7 +3,7 @@
     <div class="app-container">
       <el-card class="manage-content">
         <el-row class="add-btn" style="margin-bottom:30px;">
-          <el-button @click="addItem">新增学科</el-button>
+          <el-button @click="goAdd">新增学科</el-button>
         </el-row>
         <!-- 搜索按钮区域 -->
         <el-form :model="formData" label-width="80px" class="manage-search">
@@ -36,9 +36,9 @@
           <el-table-column align="center" prop="totals" width="80" label="题目数量"></el-table-column>
           <el-table-column align="center" width="300" label="操作">
             <template slot-scope="scoped">
-              <el-link type="primary">学科分类</el-link>
-              <el-link type="primary">学科标签</el-link>
-              <el-link @click="editItem(scoped.row)" type="primary">修改</el-link>
+              <el-link @click="goDirectorys(scoped.row)" type="primary">学科分类</el-link>
+              <el-link @click="goTags(scoped.row)" type="primary">学科标签</el-link>
+              <el-link @click="goEdit(scoped.row)" type="primary">修改</el-link>
               <el-link @click="delItem(scoped.row)" type="primary">删除</el-link>
             </template>
           </el-table-column>
@@ -95,17 +95,29 @@ export default {
     }
   },
   methods: {
+    // 跳转学科目录
+    goDirectorys(row) {
+      this.$router.push({
+        path: `directorys/${row.id}`
+      })
+    },
+    // 跳转学科标签
+    goTags(row) {
+      this.$router.push({
+        path: `tags/${row.id}`
+      })
+    },
     // 学科新增
-    addItem() {
+    goAdd() {
       this.dialogTableVisible = true
       this.editInfo = {}
     },
     // 学科修改
-    editItem(row) {
+    goEdit(row) {
       this.dialogTableVisible = true
       this.editInfo = row
     },
-    // 删除学科分类
+    // 学科删除
     delItem(row) {
       this.$confirm('确认删除此条分类？', '提示').then(async () => {
         let result = await remove(row)
