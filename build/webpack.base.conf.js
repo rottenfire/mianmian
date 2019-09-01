@@ -35,7 +35,7 @@ module.exports = {
     extensions: ['.js', '.vue', '.json'],
     alias: {
       'vue$': 'vue/dist/vue.esm.js',
-      '@': resolve('src'),
+      '@': resolve('src')
     }
   },
   module: {
@@ -49,7 +49,7 @@ module.exports = {
       {
         // 3) less处理loader配置
         test: /\.less$/,
-        use: ["style-loader", "css-loader", "less-loader"]
+        use: ['style-loader', 'css-loader', 'less-loader']
       },
       {
         test: /\.js$/,
