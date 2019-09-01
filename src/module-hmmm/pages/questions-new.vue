@@ -153,6 +153,7 @@ import { add } from '@/api/hmmm/questions.js'
 export default {
   name: 'QuestionsNew',
   data() {
+    // options的校验方法
     const validateOptions = (rules, value, callback) => {
       if (!this.isSubmit) return
       let hasChoice = false
@@ -253,24 +254,26 @@ export default {
     }
   },
   methods: {
+    // 获取学科列表
     async getSubjectsList() {
       let result = await subjectsSimple()
       this.subjectList = result.data
     },
+    // 获取目录列表
     async getDirectorysList() {
       let result = await directorysSimple()
       this.directoryList = result.data
     },
+    // 获取公司列表
     async getCompanysList() {
       let result = await companysList()
       this.companyList = result.data
     },
+    // 改变city
     changeCity(value) {
       this.areaList = cityArea(value)
     },
-    setImgURL(param) {
-      console.log(param)
-    },
+    // 新增一个选项，给定后一个选项值
     addItem() {
       const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
       let newCode = codeStr.charAt(this.formData.options.length)
@@ -282,11 +285,13 @@ export default {
       })
       this.resetOption()
     },
+    // 删除一个选项
     delItem(index) {
       this.formData.options.splice(index, 1)
       this.resetOption()
       this.resetCode()
     },
+    // 重置选项的选项值
     resetCode() {
       const codeStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
       this.formData.options = this.formData.options.map((item, index) => {
@@ -294,14 +299,18 @@ export default {
         return item
       })
     },
+    // 改变试题类型时重置选项的选择为false
     changeType(data) {
       this.resetOption()
     },
+    // 改变选项
     changeOption(data) {
+      // 重置options的isRight为false
       this.formData.options = this.formData.options.map(item => {
         item.isRight = false
         return item
       })
+      // 单选时
       if (this.formData.questionType === '1') {
         this.optionList = []
         this.formData.options = this.formData.options.map(item => {
@@ -311,6 +320,7 @@ export default {
           return item
         })
       } else {
+        // 多选时
         this.optionRadio = ''
         const obj = {}
         data.map(item => {
@@ -324,6 +334,7 @@ export default {
         })
       }
     },
+    // 重置选项值为false，单选多选model为空
     resetOption() {
       this.optionList = []
       this.optionRadio = ''
