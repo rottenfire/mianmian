@@ -166,11 +166,15 @@ export default {
      this.chkTypeList = chkType
      // 获取题目类型选项
      this.questionTypeList = questionType
-      this.choiceList = await choice(params)
+      this.choiceList = await choice({
+      page: this.formData.currentPage,
+      pagesize: this.formData.pageSize,
+      ...params
+      })
     //  console.log(this.choiceList)
      this.choice = (this.choiceList.data.items)
     //  console.log(this.choice)     
-    this.formData.total = this.choiceList.data.pages
+    this.formData.total = this.choiceList.data.counts
     },
     // 清除选项
     clearFormData() {
@@ -178,7 +182,9 @@ export default {
     },
     // 分页当前页改变
     changePage(newPage) {
-      this.page.currentPage = newPage
+      this.formData.currentPage = newPage
+      // console.log(this.formData.currentPage)
+      this.getChoiceList() 
     },
     getcity(pm) {
       this.citysList = citys(pm) 
