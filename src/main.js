@@ -11,13 +11,10 @@ import './icons' // icon
 import './errorLog' // error log
 import * as filters from './filters' // global filters
 import './mock' // simulation data
-import { quillEditor } from 'vue-quill-editor'
+
 // font-awesome
 import 'font-awesome/css/font-awesome.css'
-// quill
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+
 /*
  * 注册 - 业务模块
  */
