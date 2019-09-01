@@ -27,8 +27,8 @@ module.exports = {
   output: {
     path: config.build.assetsRoot,
     filename: '[name].js',
-    publicPath: process.env.NODE_ENV === 'production' ?
-      config.build.assetsPublicPath : config.dev.assetsPublicPath
+    publicPath: process.env.NODE_ENV === 'production'
+      ? config.build.assetsPublicPath : config.dev.assetsPublicPath
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
@@ -45,22 +45,8 @@ module.exports = {
         loader: 'vue-loader',
         options: vueLoaderConfig
       },
-      { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
       {
         test: /\.less$/,
-        use: ['style-loader', 'css-loader', 'less-loader']
-      },
-      {
-        test:/\.less$/,
-        use: ["style-loader", "css-loader", "less-loader"]
-      },
-      {
-        // 3) less处理loader配置
-        test: /\.less$/,
-        use: ['style-loader', 'css-loader', 'less-loader']
-      },
-      {
-        test: /\.less$/,// 正则表达式匹配所有的.less文件
         use: ['style-loader', 'css-loader', 'less-loader']
       },
       {
