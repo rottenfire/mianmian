@@ -154,10 +154,23 @@ export default {
   name: 'QuestionsNew',
   data() {
     const validateOptions = (rules, value, callback) => {
-        console.log(rules)
-        console.log(value)
-        console.log(callback)
+      if (!this.isSubmit) return
+      let hasChoice = false
+      value.map(item => {
+        if (item.isRight) {
+          hasChoice = true
+        }
+        if (!item.title) {
+          callback(new Error('所有选择必须有内容'))
+        }
+      })
+      console.log(hasChoice)
+      if (hasChoice) {
+        callback()
+      } else {
+        callback(new Error('必须有正确的选项'))
       }
+    }
     return {
       formData: {
         subjectID: '',
@@ -181,19 +194,17 @@ export default {
       },
       formDataRules: {
         subjectID: [
-          {required: true, message: '请选择学科', trigger: 'change'}
+          { required: true, message: '请选择学科', trigger: 'change' }
         ],
         catalogID: [
-          {required: true, message: '请选择目录', trigger: 'change'}
+          { required: true, message: '请选择目录', trigger: 'change' }
         ],
         enterpriseID: [
-          {required: true, message: '请选择企业', trigger: 'change'}
+          { required: true, message: '请选择企业', trigger: 'change' }
         ],
-        city: [
-          {required: true, message: '请选择城市', trigger: 'change'}
-        ],
+        city: [{ required: true, message: '请选择城市', trigger: 'change' }],
         direction: [
-          {required: true, message: '请选择方向', trigger: 'change'}
+          { required: true, message: '请选择方向', trigger: 'change' }
         ],
         questionType: [
           { required: true, message: '请选择题型', trigger: 'change' }
@@ -205,13 +216,14 @@ export default {
           { required: true, message: '请输入题干内容', trigger: 'blur' }
         ],
         option: [
+          {
+            validator: validateOptions
+          }
         ],
         answer: [
           { required: true, message: '请输入答案解析', trigger: 'blur' }
         ],
-        tags: [
-          { required: true, message: '请输入试题标签', trigger: 'blur' }
-        ]
+        tags: [{ required: true, message: '请输入试题标签', trigger: 'blur' }]
       },
       optionRadio: '',
       optionList: [],
@@ -225,6 +237,7 @@ export default {
       questionType: questionType, // 单选1 多选2 简答3
       difficulty: difficulty,
       disabled: false,
+      isSubmit: false,
       editorOption: {
         placeholder: '请在这里输入'
       }
@@ -311,7 +324,8 @@ export default {
         return item
       })
     },
-    async submitQuestion() {
+    // 提交新增问题表单内容
+    submitQuestion() {
       for (let i = 0; i < this.formData.option.length; i++) {
         console.log(
           this.formData.option[i].code,
@@ -319,8 +333,15 @@ export default {
         )
       }
       console.log(this.formData)
-      let result = await add(this.formData)
-      console.log(result)
+      this.isSubmit = true
+      this.$refs.newQuestionsForm.validate(async isOK => {
+        if (isOK) {
+          // 通过校验
+          let result = await add(this.formData)
+          console.log(result)
+        }
+      })
+      this.isSubmit = false
     }
   },
   created() {
@@ -369,6 +390,6 @@ export default {
   }
 }
 .addItemBtn {
-  margin: -10px 0 20px 80px;
+  margin: 20px 0 20px 80px;
 }
 </style>
