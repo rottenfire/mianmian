@@ -103,7 +103,7 @@ export default [
         meta: { title: '面试技巧文章', noCache: true }
       },
       {
-        path: 'add',
+        path: 'add/:id',
         component: _import('hmmm/pages/article-add'),
         name: 'article-add',
         meta: { title: '面试技巧添加', noCache: true }

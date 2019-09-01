@@ -14,7 +14,7 @@
         <el-row type="flex" justify="center">
           <el-form-item>
             <el-button type="primary" @click="onSubmit">确定</el-button>
-            <el-button>取消</el-button>
+            <el-button @click="$router.push('/articles/list')">取消</el-button>
           </el-form-item>
         </el-row>
       </el-form>
@@ -23,14 +23,15 @@
 </template>
 
 <script>
-import { add } from '@/api/hmmm/articles'
-import eventBus from '@/utils/eventBus'
+import { add, detail } from '@/api/hmmm/articles'
+import { CLIENT_RENEG_LIMIT } from 'tls'
 
 export default {
   name: 'ArticleAdd',
   data() {
     return {
       articleForm: {
+        id: null,
         title: '',
         articleBody: '',
         videoURL: ''
@@ -55,10 +56,11 @@ export default {
       })
     }
   },
-  created() {
-      eventBus.$on('editItem', row => {
-          this.articleForm = row
-      })
+ async created() {
+    this.articleForm = this.$route.params
+    let result = await detail(this.$route.params)
+    this.articleForm = result.data
+    
   }
 }
 </script>

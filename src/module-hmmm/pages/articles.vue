@@ -40,7 +40,7 @@
               >修改</el-button>
               <el-button @click.native.prevent="deleteRow(scope.row)" type="text" size="small">删除</el-button>
               <el-button
-                @click.native.prevent="changeState(scope.row)"
+                @click.prevent="changeState(scope.row)"
                 type="text"
                 size="small"
               >{{scope.row.state ? '禁用' : '启用'}}</el-button>
@@ -52,7 +52,7 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="page.currentPage"
+          :current-page="page.page"
           :page-sizes="[10, 20]"
           :page-size="10"
           layout="total, sizes, prev, pager, next, jumper"
@@ -65,7 +65,6 @@
 
 <script>
 import { list, remove, detail, state } from '@/api/hmmm/articles'
-import eventBus from '@/utils/eventBus'
 export default {
   name: 'ArticlesList',
   data() {
@@ -90,8 +89,18 @@ export default {
       this.articleList = result.data.items
       this.totalPage = result.data.counts
     },
-    handleSizeChange() {},
-    handleCurrentChange() {},
+    // 每页显示条数变化时出发此函数
+    handleSizeChange(val) {
+      this.page.pagesize = val
+      this.getArticleList()
+
+    },
+    // 当前页码发生变化时出发此函数
+    handleCurrentChange(val) {
+      this.page.page = val
+      this.getArticleList()
+
+    },
     // 删除行数据
     deleteRow(row) {
       this.$confirm('确定删除？', '提示').then(() => {
@@ -109,19 +118,21 @@ export default {
       this.articleDetail = result.data
     },
     format(row, column, cellValue, index) {
-      return cellValue ? '启用' : '禁用'
+      return row.state ? '启用' : '禁用'
     },
     // 改变显示状态
     async changeState(row) {
-      await state(row) // 后端未作相应处理，页面数据没有改变
+      // row.state = Number(!row.state)
+      row.state = row.state ? 0 : 1
+      let result = await state(row) // 后端未作相应处理，页面数据没有改变
       this.getArticleList()
     },
     toAdd() {
-      this.$router.push('/articles/add')
+      this.$router.push(`/articles/add/${' '}`)
     },
     editRow(row) {
-      eventBus.$emit('editItem', row)
-      this.$router.push('/articles/add')
+      this.$router.push(`/articles/add/${row.id}`)
+
     }
   },
   created() {
