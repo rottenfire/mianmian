@@ -3,11 +3,11 @@
     <div class="app-container">
       <el-form :model="formData" ref="form" :rules="rules">
         <el-form-item label="标签名称:" label-width="100px" prop="tagName">
-          <el-input v-model="formData.tagName" style="width:400px"></el-input>
+          <el-input v-model="formData.tagName"></el-input>
         </el-form-item>
       </el-form>
       <div class="tagsAddFooter">
-        <el-button type="primary" @click="addTable(formData)">确定</el-button>
+        <el-button type="primary" @click="addTable">确定</el-button>
         <el-button @click="close">取消</el-button>
       </div>
     </div>
@@ -15,13 +15,14 @@
 </template>
 
 <script>
-import {add, update} from '../../api/hmmm/tags'
+import {add, detail} from '@/api/hmmm/tags'
 export default {
   name: 'TagsAdd',
-  // props: ['modify'],
+  props: ['addEdit'],
   data() {
     return {
       formData: {
+        id: null,
         tagName: '',
         subjectID: 123
       },
@@ -31,26 +32,13 @@ export default {
     }
   },
   methods: {
-    // 获取修改标签信息 modifyTable----------------------------
-    // async editItem() {
-    //  await update()
-    // },
-    modifyTable(row) {
-      // this.$on('modifyTable')
-      this.formData.tagName = this.modify.tagName
-      this.formData.subjectID = this.modify.subjectID
-      console.log(this.modify.tagName)
-    },
     // 添加标签 ------------------------------------
-    addTable(formData) {
-      this.$refs.form.validate(async isOK => {
+     addTable() {
+      this.$refs.form.validate(isOK => {
         if (isOK) {
-          let result = await add(formData)
-          // 添加成功清空输入框内容并关闭弹窗
-          if (result.status === 200) {
-            this.$refs.formData.resetFields()
-            this.close()
-          }
+          let result = add(this.formData)
+          // 添加成功关闭弹窗
+          this.$emit('closedialog', false)
         }
       })
     },
@@ -59,8 +47,9 @@ export default {
       this.$emit('closedialog', false)
     }
   },
-  created() {
-    // this.modifyTable()
+ async created() { 
+    let {id} = this.addEdit
+    this.formData = id ? (await detail({ id })).data : this.formData
   }
 }
 </script>

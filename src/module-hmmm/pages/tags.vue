@@ -45,7 +45,7 @@
     <!-- 新增标签 -------------------------------------------------------------- -->
     <template v-if="tagsAddTableVisible">
       <el-dialog title="新增标签" :visible.sync="tagsAddTableVisible">
-        <tags-add :addEdit="addEdit" @closedialog="closedialog"></tags-add>
+        <tags-add  :addEdit="addEdit" @closedialog="closedialog"></tags-add>
       </el-dialog>
     </template>
   </div>
@@ -91,22 +91,23 @@ export default {
       this.tableData = getTableData.data.items
       // 获取总页数赋值给page.pages
       this.page.pages = getTableData.data.counts
-      console.log(getTableData.data.counts)
     },
     // 添加标签 ----------------------------------------
     addTable() {
       // 点击添加 显示弹窗
       this.tagsAddTableVisible = true
-      // 
-      this.addEdit = {} // 问题
+      // 返回值是{} 赋值addEdit => data中定义值
+      this.addEdit = {} 
+      // 重新获取列表
+      this.page.page = 1
     },
     // 修改 --------------------------------------------
     editTable(row) {
       // 点击添加 显示弹窗
       this.tagsAddTableVisible = true
-      //
-      this.addEdit = row // 问题
-      this.$emit('modifyTable', row)
+      // 返回值是row.id 赋值addEdit => data中定义值
+      this.addEdit = row
+     
     },
     // 关闭弹窗 ----------------------------------------
     closedialog(close) {
@@ -118,8 +119,8 @@ export default {
     async deleteTable(id) {
       await this.$confirm('删除么？', '提示')
       await remove(id)
-        // console.log(id)
-        // 重新获取数据
+      // console.log(id)
+      // 重新获取数据
       this.getTableData()
     },
     // 点击跳转学科 ------------------------------------
@@ -145,12 +146,10 @@ export default {
     // 禁用 -------------------------------------------
     ProhibitTable(row) {}
   },
-
   // 渲染
   created() {
     this.getTableData()
   },
-
   // 局部组件  弹窗显示
   components: {
     // 注册标签添加组件
