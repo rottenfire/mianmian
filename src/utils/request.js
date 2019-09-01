@@ -2,11 +2,13 @@ import axios from 'axios'
 import { Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import JSONBig from 'json-bigint'
 
 // create an axios instance
 const instance = axios.create({
   baseURL: process.env.BASE_API, // api的base_url
   timeout: 5000 // request timeout
+
 })
 
 // request interceptor
@@ -103,3 +105,9 @@ export const createFormAPI = (url, method, data) => {
     ...config
   })
 }
+
+// 大数字
+axios.default.transformResopnse = [function (data) {
+
+  return data ? JSONBig.parse(data) : {}
+ }]
